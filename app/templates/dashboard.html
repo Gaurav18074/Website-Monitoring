@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head>
+  <title>Website Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>body{font-family:system-ui;margin:2rem;max-width:900px}
+  .up{color:#0a7}.down{color:#c33}canvas{margin:1rem 0}</style>
+</head><body>
+<h1>Website Monitor</h1>
+<ul>
+{% for s in sites %}
+  <li><b>{{s.name}}</b> — {{s.url}}
+    <canvas id="c{{s.id}}" height="80"></canvas></li>
+{% endfor %}
+</ul>
+<script>
+{% for s in sites %}
+fetch("/api/logs/{{s.id}}?limit=60").then(r=>r.json()).then(d=>{
+  d.reverse();
+  new Chart(document.getElementById("c{{s.id}}"),{
+    type:"line",
+    data:{labels:d.map(x=>new Date(x.checked_at).toLocaleTimeString()),
+          datasets:[{label:"ms",data:d.map(x=>x.response_time_ms),tension:.3}]},
+    options:{scales:{y:{beginAtZero:true}}}
+  });
+});
+{% endfor %}
+</script>
+</body></html>
